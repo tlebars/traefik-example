@@ -1,0 +1,46 @@
+services:
+  traefik:
+    image: "traefik:${TRAEFIK_VERSION}"
+    container_name: traefik
+    restart: always
+    environment:
+      TZ: ${TIMEZONE}
+    ports:
+      - "${TRAEFIK_HTTP_PORT}:80"
+      - "${TRAEFIK_HTTPS_PORT}:443"
+    volumes:
+      - ./data/traefik/conf:/etc/traefik
+      - ./data/traefik/logs:/var/log
+      - ${DOCKER_SOCK_PATH}:/var/run/docker.sock:ro
+      - /etc/localtime:/etc/localtime:ro
+    networks:
+      - MON_SERVICE
+      - routed
+    healthcheck:
+      test: ["CMD", "traefik", "healthcheck", "--ping"]
+
+  mon_service:
+    [...]:
+      - [...]
+    depends_on:
+      traefik:
+        condition: service_healthy
+    networks:
+      - MON_SERVICE
+      - routed
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.MON_SERVICE.rule=Host(`${MON_SERVICE_HOST}`)"
+      - "traefik.http.routers.MON_SERVICE.entrypoints=https"
+      - "traefik.http.services.MON_SERVICE.loadbalancer.server.port=${MON_SERVICE_PORT}"
+      - "traefik.http.routers.MON_SERVICE.tls.certresolver=certificator"
+      - "traefik.http.routers.MON_SERVICE.middlewares=headers@file"
+      - "traefik.http.routers.MON_SERVICE.tls.options=modern@file"
+
+networks:
+  MON_SERVICE:
+    name: MON_SERVICE
+    driver: bridge
+    internal: true
+  routed:
+    name: routed

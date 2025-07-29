@@ -1,0 +1,5 @@
+.env
+backup/*
+!backup/.gitkeep
+data/traefik/conf/acme.json
+data/traefik/logs/*
