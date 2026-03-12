@@ -14,33 +14,35 @@ services:
       - ${DOCKER_SOCK_PATH}:/var/run/docker.sock:ro
       - /etc/localtime:/etc/localtime:ro
     networks:
-      - MON_SERVICE
-      - routed
+      - externe
+      - interne
     healthcheck:
       test: ["CMD", "traefik", "healthcheck", "--ping"]
 
-  mon_service:
-    [...]:
-      - [...]
+  exemple:
+    image: "exemple:${EXEMPLE_VERSION}"
+    container_name: exemple
+    restart: always
+    environment:
+      TZ: ${TIMEZONE}
     depends_on:
       traefik:
         condition: service_healthy
     networks:
-      - MON_SERVICE
-      - routed
+      - interne
+      - externe
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.MON_SERVICE.rule=Host(`${MON_SERVICE_HOST}`)"
-      - "traefik.http.routers.MON_SERVICE.entrypoints=https"
-      - "traefik.http.services.MON_SERVICE.loadbalancer.server.port=${MON_SERVICE_PORT}"
-      - "traefik.http.routers.MON_SERVICE.tls.certresolver=certificator"
-      - "traefik.http.routers.MON_SERVICE.middlewares=headers@file"
-      - "traefik.http.routers.MON_SERVICE.tls.options=modern@file"
+      - "traefik.http.routers.EXEMPLE.rule=Host(`${EXEMPLE_HOST}`)"
+      - "traefik.http.routers.EXEMPLE.entrypoints=https"
+      - "traefik.http.services.EXEMPLE.loadbalancer.server.port=${EXEMPLE_PORT}"
+      - "traefik.http.routers.EXEMPLE.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.EXEMPLE.middlewares=headers@file"
 
 networks:
-  MON_SERVICE:
-    name: MON_SERVICE
+  interne:
+    name: interne
     driver: bridge
     internal: true
-  routed:
-    name: routed
+  externe:
+    name: externe

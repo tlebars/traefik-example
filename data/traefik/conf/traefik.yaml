@@ -16,23 +16,30 @@ entryPoints:
         certResolver: certificator
 
 certificatesResolvers:
-  certificator:
+  letsencrypt:
     acme:
-      email: XXXXXXXXX
+      email: CHANGEZ@MOI
       storage: /etc/traefik/acme.json
       # Preproduction
       #caServer: https://acme-staging-v02.api.letsencrypt.org/directory
       # Production
       caServer: https://acme-v02.api.letsencrypt.org/directory
       tlsChallenge: {}
+
+tls:
+  options:
+    default:
+      sniStrict: true
+      minVersion: "VersionTLS13"
+
 log:
   level: ERROR
   filePath: /var/log/traefik.log
-  format: common #json
+  format: common
 
 accessLog:
   filePath: /var/log/access.log
-  format: common #json
+  format: common
   fields:
     names:
       StartUTC: drop
